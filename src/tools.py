@@ -1,6 +1,7 @@
 import os, tqdm, mat4py, json
 
-def convert(sourcePath, destPath):
+# convert mat-5 files into json
+def converter(sourcePath, destPath):
     os.chdir(sourcePath)
     sourceNames = os.listdir(sourcePath)
 
@@ -20,8 +21,7 @@ def _convert(filePath, fileName):
         json.dump(mat4py.loadmat(f"{fileName}"), jsonFile)
 
 # merge lists of time-series data into one list
-
-def merge(dataLists):
+def merger(dataLists):
     returnDataList = []
 
     for dataList in dataLists:
@@ -30,6 +30,7 @@ def merge(dataLists):
     
     return returnDataList
 
+# check data is monotonic
 def isMonotonic(dataLists, monotonicParam=1):
     for index in range(len(dataLists)):
         if index < len(dataLists) - 1:
@@ -42,5 +43,22 @@ def isMonotonic(dataLists, monotonicParam=1):
             if (monotonicParam ==1) : print("monotonic increase")
             else : print("monotonic decrease")
 
+# save list as text file
 def saveTxt(dataLists, fileName="temp"):
     with open(f'{fileName}.txt', 'w') as f : f.writelines(str(dataLists))
+
+# load json files as dictionary
+def loader(destPath):
+    fileNames = os.listdir(destPath)
+    os.chdir(destPath)
+
+    dataDicts = dict()
+
+    for fileName in tqdm.tqdm(fileNames):
+        if (os.path.isfile(fileName)):
+            with open(os.path.join(destPath, fileName)) as f:
+                jsonData = json.load(f)
+        
+            dataDicts[fileName] = jsonData
+
+    return dataDicts

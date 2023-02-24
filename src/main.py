@@ -22,11 +22,11 @@
 #   description *str*
 
 import argparse, os
-import converter
-import json
+import tools
 
 parser = argparse.ArgumentParser(description="Folder Path")
 pwd = os.getcwd()
+
 parser.add_argument("-s", "--source", type=str, help="Path of source files", default=f"{pwd}/../data/")
 parser.add_argument("-d", "--dest", type=str, help="Path to destination", default=f"{pwd}/../json/")
 parser.add_argument("-c", "--convert", type=bool, help="Need to convert", default=False)
@@ -34,22 +34,17 @@ parsers = parser.parse_args()
 
 sourcePath = parsers.source
 destPath = parsers.dest
+isConvert = parsers.convert
 
-if (parsers.convert) : converter.convert(sourcePath, destPath)
+if (isConvert) : tools.converter(sourcePath, destPath)
+dataDict = tools.loader(destPath)
 
-with open('../json/RW26.json') as f:
-    json_obj = json.load(f)
-
-timeList = converter.merge(json_obj['data']['step']['time'])
-# relativeTimeList = converter.merge(json_obj['data']['step']['relativeTime'])
-voltageList = converter.merge(json_obj['data']['step']['voltage'])
-currentList = converter.merge(json_obj['data']['step']['current'])
-temperatureList = converter.merge(json_obj['data']['step']['temperature'])
-# converter.isMonotonic(relativeTimeList) # not monotonic
+timeList = tools.merger(dataDict['RW26.json']['data']['step']['time'])
+voltageList = tools.merger(dataDict['RW26.json']['data']['step']['voltage'])
+currentList = tools.merger(dataDict['RW26.json']['data']['step']['current'])
+temperatureList = tools.merger(dataDict['RW26.json']['data']['step']['temperature'])
 
 print(len(timeList))
 print(len(voltageList))
 print(len(currentList))
 print(len(temperatureList))
-
-converter.saveTxt(temperatureList)
