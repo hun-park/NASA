@@ -23,7 +23,6 @@
 
 import argparse, os
 import converter
-import plotly.express as px
 import json
 
 parser = argparse.ArgumentParser(description="Folder Path")
@@ -41,9 +40,16 @@ if (parsers.convert) : converter.convert(sourcePath, destPath)
 with open('../json/RW26.json') as f:
     json_obj = json.load(f)
 
-# fig = px.line(x=json_obj['data']['step']['time'], y=json_obj['data']['step']['voltage'])
+timeList = converter.merge(json_obj['data']['step']['time'])
+# relativeTimeList = converter.merge(json_obj['data']['step']['relativeTime'])
+voltageList = converter.merge(json_obj['data']['step']['voltage'])
+currentList = converter.merge(json_obj['data']['step']['current'])
+temperatureList = converter.merge(json_obj['data']['step']['temperature'])
+# converter.isMonotonic(relativeTimeList) # not monotonic
 
-# fig.show(renderer="png")
+print(len(timeList))
+print(len(voltageList))
+print(len(currentList))
+print(len(temperatureList))
 
-print(type(json_obj['data']['step']['date'][16665]))
-print(json_obj['data']['step']['relativeTime'][3])
+converter.saveTxt(temperatureList)
