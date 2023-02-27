@@ -10,13 +10,13 @@ if (parsers.convert) : tools.converter(parsers.source, parsers.dest)
 data = tools.transformer(tools.loader(parsers.dest, isFile=True)['RW26.json']['data']['step'])
 dataList = \
 {
-    'comment'    : tools.merger(data['comment'],     isCliped=True, clipStart=0, clipEnd=100),
-    'type'       : tools.merger(data['type'],        isCliped=True, clipStart=0, clipEnd=100),
-    'time'       : tools.merger(data['time'],        isCliped=True, clipStart=0, clipEnd=100),
-    'voltage'    : tools.merger(data['voltage'],     isCliped=True, clipStart=0, clipEnd=100),
-    'current'    : tools.merger(data['current'],     isCliped=True, clipStart=0, clipEnd=100),
-    'temparature': tools.merger(data['temperature'], isCliped=True, clipStart=0, clipEnd=100)
+    'comment'    : tools.merger(data['comment'],     isCliped=True, clipStart=0, clipEnd=5),
+    'type'       : tools.merger(data['type'],        isCliped=True, clipStart=0, clipEnd=5),
+    'time'       : tools.merger(data['time'],        isCliped=True, clipStart=0, clipEnd=5),
+    'voltage'    : tools.merger(data['voltage'],     isCliped=True, clipStart=0, clipEnd=5),
+    'current'    : tools.merger(data['current'],     isCliped=True, clipStart=0, clipEnd=5),
+    'temparature': tools.merger(data['temperature'], isCliped=True, clipStart=0, clipEnd=5)
 }
 
-tools.plotter(dataList, 'time', 'voltage')
-tools.plotter(dataList, 'time', 'current')
+print(data.head(5))
+tools.plotter(dataList, 'time', ('voltage', 'current'), testName=os.path.split(parsers.dest)[1])

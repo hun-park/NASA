@@ -25,11 +25,11 @@ def transformer(dataLists):
     return pandas.DataFrame.from_dict(dataLists)
 
 # merge lists of time-series data into one list
-def merger(dataLists, isCliped=False, clipStart=0, clipEnd=-1):
+def merger(dataLists, isCliped=False, clipStart=0, clipEnd=-2):
     returnDataList = []
 
     if (isCliped) :
-        for dataList in dataLists[clipStart:clipEnd]:
+        for dataList in dataLists[clipStart:clipEnd+1]:
             if (type(dataList) != list) : returnDataList += [dataList]
             else : returnDataList += dataList
         
@@ -81,11 +81,12 @@ def loader(destPath, isFile=False, toDataFrame=False):
     else : return dataDicts
 
 # plot graph
-def plotter(data, x_axis, y_axis, isSave=True, format='png'):
+def plotter(data, x_axis, y_axises, isSave=True, format='png', testName='temp'):
     fig = plotly.graph_objects.Figure()
 
-    fig.add_trace(plotly.graph_objects.Scatter(x=data[x_axis], y=data[y_axis]))
-    fig.write_html(f'{x_axis}_{y_axis}.html')
+    for y_axis in y_axises:
+        fig.add_trace(plotly.graph_objects.Scatter(x=data[x_axis], y=data[y_axis], name=f'{y_axis}'))
+    fig.write_html(f'{testName}_{x_axis}_{str(y_axises)}.html')
 
-    if (isSave) : return fig.write_image(f'{x_axis}_{y_axis}.{format}', format=format)
+    if (isSave) : return fig.write_image(f'{testName}_{x_axis}_{y_axis}.{format}', format=format)
     else : return fig
