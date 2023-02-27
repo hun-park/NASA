@@ -1,20 +1,22 @@
-import argparse, os
-import tools
+import argparse, os, tools
 
 parser = argparse.ArgumentParser(description="Folder Path")
-pwd = os.getcwd()
-
-parser.add_argument("-s", "--source", type=str, help="Path of source files", default=f"{pwd}/../data/")
-parser.add_argument("-d", "--dest", type=str, help="Path to destination", default=f"{pwd}/../json/RW26.json")
+parser.add_argument("-s", "--source", type=str, help="Path of source files", default="/mnt/hp/NASA/data/")
+parser.add_argument("-d", "--dest", type=str, help="Path to destination", default="/mnt/hp/NASA/json/RW26.json")
 parser.add_argument("-c", "--convert", type=bool, help="Need to convert", default=False)
 parsers = parser.parse_args()
 
 if (parsers.convert) : tools.converter(parsers.source, parsers.dest)
-dataDict = tools.loader(parsers.dest, isFile=True)
-dataList = {'time': tools.merger(dataDict['RW26.json']['data']['step']['time']),
-            'voltage': tools.merger(dataDict['RW26.json']['data']['step']['voltage']),
-            'current': tools.merger(dataDict['RW26.json']['data']['step']['current']),
-            'temparature': tools.merger(dataDict['RW26.json']['data']['step']['temperature'])
-            }
+data = tools.transformer(tools.loader(parsers.dest, isFile=True)['RW26.json']['data']['step'])
+dataList = \
+{
+    'comment'    : tools.merger(data['comment'],     isCliped=True, clipStart=0, clipEnd=100),
+    'type'       : tools.merger(data['type'],        isCliped=True, clipStart=0, clipEnd=100),
+    'time'       : tools.merger(data['time'],        isCliped=True, clipStart=0, clipEnd=100),
+    'voltage'    : tools.merger(data['voltage'],     isCliped=True, clipStart=0, clipEnd=100),
+    'current'    : tools.merger(data['current'],     isCliped=True, clipStart=0, clipEnd=100),
+    'temparature': tools.merger(data['temperature'], isCliped=True, clipStart=0, clipEnd=100)
+}
 
 tools.plotter(dataList, 'time', 'voltage')
+tools.plotter(dataList, 'time', 'current')

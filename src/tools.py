@@ -1,4 +1,4 @@
-import os, tqdm, mat4py, json, pandas, plotly.express, plotly.graph_objects
+import os, tqdm, mat4py, json, pandas, plotly.graph_objects
 
 # convert mat-5 files into json
 def converter(sourcePath, destPath):
@@ -20,15 +20,26 @@ def _convert(filePath, fileName):
     with open(f"{filePath}{os.path.splitext(fileName)[0]}.json", "w") as jsonFile:
         json.dump(mat4py.loadmat(f"{fileName}"), jsonFile)
 
+# transform python dictionay data structure into pandas dataframe
+def transformer(dataLists):
+    return pandas.DataFrame.from_dict(dataLists)
+
 # merge lists of time-series data into one list
-def merger(dataLists):
+def merger(dataLists, isCliped=False, clipStart=0, clipEnd=-1):
     returnDataList = []
 
-    for dataList in dataLists:
-        if (type(dataList) != list) : returnDataList += [dataList]
-        else : returnDataList += dataList
-    
-    return returnDataList
+    if (isCliped) :
+        for dataList in dataLists[clipStart:clipEnd]:
+            if (type(dataList) != list) : returnDataList += [dataList]
+            else : returnDataList += dataList
+        
+        return returnDataList
+    else :
+        for dataList in dataLists:
+            if (type(dataList) != list) : returnDataList += [dataList]
+            else : returnDataList += dataList
+        
+        return returnDataList
 
 # check data is monotonic
 def isMonotonic(dataLists, monotonicParam=1):
@@ -73,8 +84,8 @@ def loader(destPath, isFile=False, toDataFrame=False):
 def plotter(data, x_axis, y_axis, isSave=True, format='png'):
     fig = plotly.graph_objects.Figure()
 
-    fig.add_trace(plotly.graph_objects.Scatter(x=data[x_axis],y=data[y_axis]))
+    fig.add_trace(plotly.graph_objects.Scatter(x=data[x_axis], y=data[y_axis]))
     fig.write_html(f'{x_axis}_{y_axis}.html')
 
-    if (isSave) : return fig.write_image(f'{x_axis}_{y_axis}.{format}',format=format)
+    if (isSave) : return fig.write_image(f'{x_axis}_{y_axis}.{format}', format=format)
     else : return fig
