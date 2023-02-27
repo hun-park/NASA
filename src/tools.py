@@ -1,4 +1,4 @@
-import os, tqdm, mat4py, json, pandas, plotly.express
+import os, tqdm, mat4py, json, pandas, plotly.express, plotly.graph_objects
 
 # convert mat-5 files into json
 def converter(sourcePath, destPath):
@@ -71,6 +71,10 @@ def loader(destPath, isFile=False, toDataFrame=False):
 
 # plot graph
 def plotter(data, x_axis, y_axis, isSave=True, format='png'):
-    fig = plotly.express.line(data, x_axis, y_axis)
+    fig = plotly.graph_objects.Figure()
+
+    fig.add_trace(plotly.graph_objects.Scatter(x=data[x_axis],y=data[y_axis]))
+    fig.write_html(f'{x_axis}_{y_axis}.html')
+
     if (isSave) : return fig.write_image(f'{x_axis}_{y_axis}.{format}',format=format)
     else : return fig
