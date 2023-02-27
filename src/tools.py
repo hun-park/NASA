@@ -1,4 +1,4 @@
-import os, tqdm, mat4py, json
+import os, tqdm, mat4py, json, pandas, plotly.express
 
 # convert mat-5 files into json
 def converter(sourcePath, destPath):
@@ -48,17 +48,29 @@ def saveTxt(dataLists, fileName="temp"):
     with open(f'{fileName}.txt', 'w') as f : f.writelines(str(dataLists))
 
 # load json files as dictionary
-def loader(destPath):
-    fileNames = os.listdir(destPath)
-    os.chdir(destPath)
-
+def loader(destPath, isFile=False, toDataFrame=False):
     dataDicts = dict()
 
-    for fileName in tqdm.tqdm(fileNames):
-        if (os.path.isfile(fileName)):
-            with open(os.path.join(destPath, fileName)) as f:
-                jsonData = json.load(f)
-        
-            dataDicts[fileName] = jsonData
+    if (isFile):
+        with open(destPath) as f:
+            jsonData = json.load(f)
+            
+        dataDicts[os.path.split(destPath)[1]] = jsonData
+    else:
+        fileNames = os.listdir(destPath)
+        os.chdir(destPath)
 
-    return dataDicts
+        for fileName in tqdm.tqdm(fileNames):
+            if (os.path.isfile(fileName)):
+                with open(os.path.join(destPath, fileName)) as f:
+                    jsonData = json.load(f)
+            
+            dataDicts[fileName] = jsonData
+    if (toDataFrame) : return pandas.DataFrame.from_dict(dataDicts)
+    else : return dataDicts
+
+# plot graph
+def plotter(data, x_axis, y_axis, isSave=True, format='png'):
+    fig = plotly.express.line(data, x_axis, y_axis)
+    if (isSave) : return fig.write_image(f'{x_axis}_{y_axis}.{format}',format=format)
+    else : return fig
