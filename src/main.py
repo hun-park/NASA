@@ -10,12 +10,12 @@ if (parsers.convert) : tools.converter(parsers.source, parsers.dest)
 data = tools.transformer(tools.loader(parsers.dest, isFile=True)['RW26.json']['data']['step'])
 dataList = \
 {
-    'comment'    : tools.merger(data['comment'],     isCliped=True, clipStart=0, clipEnd=5),
-    'type'       : tools.merger(data['type'],        isCliped=True, clipStart=0, clipEnd=5),
-    'time'       : tools.merger(data['time'],        isCliped=True, clipStart=0, clipEnd=5),
-    'voltage'    : tools.merger(data['voltage'],     isCliped=True, clipStart=0, clipEnd=5),
-    'current'    : tools.merger(data['current'],     isCliped=True, clipStart=0, clipEnd=5),
-    'temparature': tools.merger(data['temperature'], isCliped=True, clipStart=0, clipEnd=5)
+    'comment'    : tools.merger(data['comment'],     isCliped=True, clipStart=0, clipEnd=500),
+    'type'       : tools.merger(data['type'],        isCliped=True, clipStart=0, clipEnd=500),
+    'time'       : tools.merger(data['time'],        isCliped=True, clipStart=0, clipEnd=500),
+    'voltage'    : tools.merger(data['voltage'],     isCliped=True, clipStart=0, clipEnd=500),
+    'current'    : tools.merger(data['current'],     isCliped=True, clipStart=0, clipEnd=500),
+    'temparature': tools.merger(data['temperature'], isCliped=True, clipStart=0, clipEnd=500)
 }
 
 print(data.head(5))

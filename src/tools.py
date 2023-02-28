@@ -88,5 +88,6 @@ def plotter(data, x_axis, y_axises, isSave=True, format='png', testName='temp'):
         fig.add_trace(plotly.graph_objects.Scatter(x=data[x_axis], y=data[y_axis], name=f'{y_axis}'))
     fig.write_html(f'{testName}_{x_axis}_{str(y_axises)}.html')
 
+    fig.show()
     if (isSave) : return fig.write_image(f'{testName}_{x_axis}_{y_axis}.{format}', format=format)
     else : return fig
