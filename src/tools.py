@@ -51,11 +51,11 @@ def transformer(dataLists, onlyInclude=[None, None]):
         return data.loc[data[onlyInclude[0]] == onlyInclude[1]]
 
 # merge lists of time-series data into one list
-def merger(dataLists, isCliped=False, clipStart=0, clipEnd=-2):
+def merger(dataLists, isCliped=False, clip=[0,-2]):
     returnDataList = []
 
     if (isCliped) :
-        for dataList in dataLists[clipStart:clipEnd+1]:
+        for dataList in dataLists[clip[0]:clip[1]+1]:
             if (type(dataList) != list) : returnDataList += [dataList]
             else : returnDataList += dataList
         
@@ -85,26 +85,27 @@ def saveTxt(dataLists, fileName="temp"):
     with open(f'{fileName}.txt', 'w') as f : f.writelines(str(dataLists))
 
 # plot graph along time
-def timePlotter(data, x_axis, y_axises, isCliped=False, clipStart=0, clipEnd=-2, isSave=True, format='png', testName='temp'):
+def timePlotter(data, x_axis, y_axises, isCliped=False, clip=[0,-2], isSave=True, format='png', testName='temp'):
     dataList = dict()
     for key in list(data.keys()):
-        dataList[key] = merger(data[key], isCliped, clipStart, clipEnd)
-    fig = plotly.graph_objects.Figure()
-
+        dataList[key] = merger(data[key], isCliped, clip)
+    
     if (len(y_axises) == 1) :
+        fig = plotly.graph_objects.Figure()
         fig.add_trace(plotly.graph_objects.Scatter(x=dataList[x_axis], y=dataList[y_axises[0]], name=f'{y_axises}'))
     else :
-        for y_axis in y_axises:
-            fig.add_trace(plotly.graph_objects.Scatter(x=dataList[x_axis], y=dataList[y_axis], name=f'{y_axis}'))
+        fig = plotly.subplots.make_subplots(rows=len(y_axises), cols=1, shared_xaxes=True, subplot_titles=y_axises)
+        for index in range(len(y_axises)):
+            fig.add_trace(plotly.graph_objects.Scatter(x=dataList[x_axis], y=dataList[y_axises[index]], name=f'{y_axises[index]}'), row=index+1, col=1)
     
     fig.write_html(f'{testName}_{x_axis}_{str(y_axises)}.html')
-    fig.write_image(f'{testName}_{x_axis}_{str(y_axis)}.{format}', format=format)
+    fig.write_image(f'{testName}_{x_axis}_{str(y_axises)}.{format}', format=format)
 
     if (isSave) : return fig
     else : return fig
 
 # plot graph along relativeTime
-def relativeTimePlotter(data, x_axis, y_axises, isCliped=False, clipStart=0, clipEnd=-2, isSave=True, format='png', testName='temp'):
+def relativeTimePlotter(data, x_axis, y_axises, isCliped=False, clip=[0,-2], isSave=True, format='png', testName='temp'):
     parkingLot = data.to_dict()
     keyRing = list(data.to_dict()['time'].keys())
 
@@ -112,21 +113,21 @@ def relativeTimePlotter(data, x_axis, y_axises, isCliped=False, clipStart=0, cli
         fig = plotly.graph_objects.Figure()
 
         if (isCliped):
-            for key in keyRing[clipStart:clipEnd+1]:
-                fig.add_trace(plotly.graph_objects.Scatter(x=parkingLot[x_axis][key], y=parkingLot[y_axises][key], name=f'{key}'))
+            for key in keyRing[clip[0]:clip[1]+1]:
+                fig.add_trace(plotly.graph_objects.Scatter(x=parkingLot[x_axis][key], y=parkingLot[y_axises][key], name=f'{y_axises}_{key}'))
         else :
             for key in keyRing:
-                fig.add_trace(plotly.graph_objects.Scatter(x=parkingLot[x_axis][key], y=parkingLot[y_axises][key], name=f'{key}'))
+                fig.add_trace(plotly.graph_objects.Scatter(x=parkingLot[x_axis][key], y=parkingLot[y_axises][key], name=f'{y_axises}_{key}'))
     else:
         fig = plotly.subplots.make_subplots(rows=len(y_axises), cols=1, shared_xaxes=True, subplot_titles=y_axises)
 
         for index in range(len(y_axises)):
             if (isCliped):
-                for key in keyRing[clipStart:clipEnd+1]:
-                    fig.add_trace(plotly.graph_objects.Scatter(x=parkingLot[x_axis][key], y=parkingLot[y_axises[index]][key], name=f'{key}'), row=index+1, col=1)
+                for key in keyRing[clip[0]:clip[1]+1]:
+                    fig.add_trace(plotly.graph_objects.Scatter(x=parkingLot[x_axis][key], y=parkingLot[y_axises[index]][key], name=f'{y_axises[index]}_{keyRing.index(key)}'), row=index+1, col=1)
             else :
                 for key in keyRing:
-                    fig.add_trace(plotly.graph_objects.Scatter(x=parkingLot[x_axis][key], y=parkingLot[y_axises[index]][key], name=f'{key}'), row=index+1, col=1)
+                    fig.add_trace(plotly.graph_objects.Scatter(x=parkingLot[x_axis][key], y=parkingLot[y_axises[index]][key], name=f'{y_axises[index]}_{keyRing.index(key)}'), row=index+1, col=1)
 
 
     fig.write_html(f'{testName}_{x_axis}_{str(y_axises)}.html')
