@@ -20,9 +20,35 @@ def _convert(filePath, fileName):
     with open(f"{filePath}{os.path.splitext(fileName)[0]}.json", "w") as jsonFile:
         json.dump(mat4py.loadmat(f"{fileName}"), jsonFile)
 
+# load json files as dictionary
+def loader(destPath, isFile=False, toDataFrame=False):
+    dataDicts = dict()
+
+    if (isFile):
+        with open(destPath) as f:
+            jsonData = json.load(f)
+            
+        dataDicts[os.path.split(destPath)[1]] = jsonData
+    else:
+        fileNames = os.listdir(destPath)
+        os.chdir(destPath)
+
+        for fileName in tqdm.tqdm(fileNames):
+            if (os.path.isfile(fileName)):
+                with open(os.path.join(destPath, fileName)) as f:
+                    jsonData = json.load(f)
+            
+            dataDicts[fileName] = jsonData
+    if (toDataFrame) : return pandas.DataFrame.from_dict(dataDicts)
+    else : return dataDicts
+
 # transform python dictionay data structure into pandas dataframe
-def transformer(dataLists):
-    return pandas.DataFrame.from_dict(dataLists)
+def transformer(dataLists, onlyInclude=[None, None]):
+    if (onlyInclude == [None, None]) :
+        return pandas.DataFrame.from_dict(dataLists)
+    else :
+        data = pandas.DataFrame.from_dict(dataLists)
+        return data.loc[data[onlyInclude[0]] == onlyInclude[1]]
 
 # merge lists of time-series data into one list
 def merger(dataLists, isCliped=False, clipStart=0, clipEnd=-2):
@@ -58,36 +84,40 @@ def isMonotonic(dataLists, monotonicParam=1):
 def saveTxt(dataLists, fileName="temp"):
     with open(f'{fileName}.txt', 'w') as f : f.writelines(str(dataLists))
 
-# load json files as dictionary
-def loader(destPath, isFile=False, toDataFrame=False):
-    dataDicts = dict()
-
-    if (isFile):
-        with open(destPath) as f:
-            jsonData = json.load(f)
-            
-        dataDicts[os.path.split(destPath)[1]] = jsonData
-    else:
-        fileNames = os.listdir(destPath)
-        os.chdir(destPath)
-
-        for fileName in tqdm.tqdm(fileNames):
-            if (os.path.isfile(fileName)):
-                with open(os.path.join(destPath, fileName)) as f:
-                    jsonData = json.load(f)
-            
-            dataDicts[fileName] = jsonData
-    if (toDataFrame) : return pandas.DataFrame.from_dict(dataDicts)
-    else : return dataDicts
-
-# plot graph
-def plotter(data, x_axis, y_axises, isSave=True, format='png', testName='temp'):
+# plot graph along time
+def timePlotter(data, x_axis, y_axises, isCliped=False, clipStart=0, clipEnd=-2, isSave=True, format='png', testName='temp'):
+    dataList = dict()
+    for key in list(data.keys()):
+        dataList[key] = merger(data[key], isCliped, clipStart, clipEnd)
     fig = plotly.graph_objects.Figure()
 
-    for y_axis in y_axises:
-        fig.add_trace(plotly.graph_objects.Scatter(x=data[x_axis], y=data[y_axis], name=f'{y_axis}'))
+    if (len(y_axises) == 1) :
+        fig.add_trace(plotly.graph_objects.Scatter(x=dataList[x_axis], y=dataList[y_axises[0]], name=f'{y_axises}'))
+    else :
+        for y_axis in y_axises:
+            fig.add_trace(plotly.graph_objects.Scatter(x=dataList[x_axis], y=dataList[y_axis], name=f'{y_axis}'))
+    
     fig.write_html(f'{testName}_{x_axis}_{str(y_axises)}.html')
+    fig.write_image(f'{testName}_{x_axis}_{str(y_axis)}.{format}', format=format)
 
-    fig.show()
-    if (isSave) : return fig.write_image(f'{testName}_{x_axis}_{y_axis}.{format}', format=format)
+    if (isSave) : return fig
+    else : return fig
+
+# plot graph along relativeTime
+def relativeTimePlotter(data, x_axis, y_axis, isCliped=False, clipStart=0, clipEnd=-2, isSave=True, format='png', testName='temp'):
+    parkingLot = data.to_dict()
+    keyRing = list(data.to_dict()['time'].keys())
+    fig = plotly.graph_objects.Figure()
+
+    if (isCliped):
+        for key in keyRing[clipStart:clipEnd+1]:
+            fig.add_trace(plotly.graph_objects.Scatter(x=parkingLot[x_axis][key], y=parkingLot[y_axis][key], name=f'{key}'))
+    else :
+        for key in keyRing:
+            fig.add_trace(plotly.graph_objects.Scatter(x=parkingLot[x_axis][key], y=parkingLot[y_axis][key], name=f'{key}'))
+    
+    fig.write_html(f'{testName}_{x_axis}_{str(y_axis)}.html')
+    fig.write_image(f'{testName}_{x_axis}_{str(y_axis)}.{format}', format=format)
+
+    if (isSave) : return fig
     else : return fig
